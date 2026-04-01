@@ -72,9 +72,12 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from "vue";
 import Beverage from "./components/Beverage.vue";
 import { useBeverageStore } from "./stores/beverageStore";
 const beverageStore = useBeverageStore();
+onMounted(()=>beverageStore.init());
+
 </script>
 
 <style lang="scss">

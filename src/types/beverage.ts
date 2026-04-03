@@ -25,8 +25,5 @@ type BeverageType = {
   creamer: CreamerType;
 };
 
-type UserType = {
-  id: string,
-  name: string
-}
-export type { BaseBeverageType, CreamerType, SyrupType, BeverageType, UserType };
+export type { BaseBeverageType, CreamerType, SyrupType, BeverageType };
+

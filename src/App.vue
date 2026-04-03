@@ -65,18 +65,71 @@
         </template>
       </li>
     </ul>
+    <div v-if="beverageStore.user == null"> <button @click="signIn">Log in to brew</button></div>
+    <div v-if="beverageStore.user !== null">
+      <span>Welcome {{  beverageStore.user.displayName }}</span>
+       <button @click="signOut">Log out</button>
+      </div>
     <input type="text" placeholder="Beverage Name" />
     <button>🍺 Make Beverage</button>
+
+  </div>
+  <div>
+    <p v-if="beverageStore.user == null">Please sign in before make beverages</p>
+    <ul v-if="beverageStore.user !== null">
+      <li>
+        <template v-for="savedBev in beverageStore.beverages" :key="savedBev.id">
+          <label>
+            <input
+              @click="showBeverage()"
+              name = "beverage"
+              type="radio"
+            />
+            {{ savedBev.name}}
+          </label>
+        </template>
+      </li>
+    </ul>
+
   </div>
   <div id="beverage-container" style="margin-top: 20px"></div>
 </template>
 
 <script setup lang="ts">
+import {
+  User,
+  getAuth,
+  UserCredential,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged
+} from "firebase/auth";
 import { onMounted } from "vue";
 import Beverage from "./components/Beverage.vue";
 import { useBeverageStore } from "./stores/beverageStore";
+
+const auth = getAuth();
+const provider = new GoogleAuthProvider();
 const beverageStore = useBeverageStore();
+const {showBeverage} = useBeverageStore();
+
 onMounted(()=>beverageStore.init());
+
+const signIn = ()=>{
+  signInWithPopup(auth,provider)
+         .then((result: UserCredential) => {const cred = GoogleAuthProvider.credentialFromResult(result); 
+                                            beverageStore.user = result.user;})
+         .catch((err: any) => {console.error("Sign in failed ", err)})
+} 
+
+const signOut = () =>{
+onAuthStateChanged(auth,(user:User|null)=> {
+
+    beverageStore.user = null;
+  
+});
+}
+
 
 </script>
 

@@ -4,7 +4,6 @@ import {
   CreamerType,
   SyrupType,
   BeverageType,
-  UserType
 } from "../types/beverage";
 import tempretures from "../data/tempretures.json";
 import db from "../firebase.ts";
@@ -19,9 +18,11 @@ import {
   QueryEndAtConstraint,
 } from "firebase/firestore";
 
+import { User } from "firebase/auth"
+
 export const useBeverageStore = defineStore("BeverageStore", {
   state: () => ({
-    user: null as UserType | null,
+    user: null as User | null,
     temps: tempretures,
     currentTemp: tempretures[0],
     bases: [] as BaseBeverageType[],
@@ -41,14 +42,12 @@ export const useBeverageStore = defineStore("BeverageStore", {
       getDocs(myBases).then((qs: QuerySnapshot) => {
         qs.forEach((qd: QueryDocumentSnapshot) => {
           this.bases.push(qd.data() as BaseBeverageType)
-          console.log(this.bases)
         })
       });
       const mySyrups = collection(db, "syrups");
       getDocs(mySyrups).then((qs: QuerySnapshot) => {
         qs.forEach((qd: QueryDocumentSnapshot) => {
           this.syrups.push(qd.data() as SyrupType)
-          console.log(this.syrups)
         })
       });
 
@@ -56,16 +55,20 @@ export const useBeverageStore = defineStore("BeverageStore", {
       getDocs(myCreamers).then((qs: QuerySnapshot) => {
         qs.forEach((qd: QueryDocumentSnapshot) => {
           this.creamers.push(qd.data() as CreamerType)
-          console.log(this.creamers)
         })
       });
     },
 
-    setUser() {
-
+    setUser(user: User, beverageType: BeverageType) {
+      const coll = collection()
+      //TODO
     },
-    makeBeverage() { },
+    makeBeverage() {
+      if (this.user == null) {
 
-    showBeverage() { },
+      }
+    },
+
+    showBeverage() { console.log("display Beverage") },
   },
 });

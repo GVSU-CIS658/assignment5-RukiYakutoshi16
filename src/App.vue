@@ -70,8 +70,8 @@
       <span>Welcome {{  beverageStore.user.displayName }}</span>
        <button @click="signOut">Log out</button>
       </div>
-    <input type="text" placeholder="Beverage Name" />
-    <button>🍺 Make Beverage</button>
+    <input type="text" placeholder="Beverage Name" v-model="bev_name"/>
+    <button @click="makeBeverage( bev_name )" >🍺 Make Beverage</button>
 
   </div>
   <div>
@@ -81,7 +81,7 @@
         <template v-for="savedBev in beverageStore.beverages" :key="savedBev.id">
           <label>
             <input
-              @click="showBeverage()"
+              @click="showBeverage(savedBev)"
               name = "beverage"
               type="radio"
             />
@@ -112,14 +112,19 @@ const auth = getAuth();
 const provider = new GoogleAuthProvider();
 const beverageStore = useBeverageStore();
 const {showBeverage} = useBeverageStore();
+const {setUser} = useBeverageStore();
+const {makeBeverage} = useBeverageStore();
+
+var bev_name = "";
 
 onMounted(()=>beverageStore.init());
 
 const signIn = ()=>{
   signInWithPopup(auth,provider)
          .then((result: UserCredential) => {const cred = GoogleAuthProvider.credentialFromResult(result); 
-                                            beverageStore.user = result.user;})
-         .catch((err: any) => {console.error("Sign in failed ", err)})
+                                                   beverageStore.user = result.user;
+                                                  })
+         .catch((err: any) => {console.error("Sign in failed ", err)}).finally(()=>{setUser(beverageStore.user?.email as string)})
 } 
 
 const signOut = () =>{
@@ -130,6 +135,7 @@ onAuthStateChanged(auth,(user:User|null)=> {
 });
 }
 
+setUser("LloydNguyen@gmail.com");
 
 </script>
 

@@ -4,6 +4,7 @@ import {
   CreamerType,
   SyrupType,
   BeverageType,
+  UserBeverage,
 } from "../types/beverage";
 import tempretures from "../data/tempretures.json";
 import db from "../firebase.ts";
@@ -13,10 +14,13 @@ import {
   setDoc,
   getDoc,
   addDoc,
+  where,
   doc,
+  query,
   QuerySnapshot,
   QueryDocumentSnapshot,
   DocumentSnapshot,
+  Query,
 } from "firebase/firestore";
 
 import { User } from "firebase/auth"
@@ -35,6 +39,7 @@ export const useBeverageStore = defineStore("BeverageStore", {
     beverages: [] as BeverageType[],
     currentBeverage: null as BeverageType | null,
     currentName: "",
+    userBev: [] as UserBeverage[],
   }),
 
   actions: {
@@ -67,13 +72,18 @@ export const useBeverageStore = defineStore("BeverageStore", {
     setUser(email?: string) {
       const fullpath = "account/" + email;
       const firebaseUser = doc(db, fullpath);
-      getDoc(firebaseUser).then((qs: DocumentSnapshot) => {
-        if (qs.exists()) {
-          const beveragePath = fullpath;
+
+      getDoc(firebaseUser).then((ds: DocumentSnapshot) => {
+        if (ds.exists()) {
+          const beveragePath = "savedBeverage";
           const firebaseBev = collection(db, beveragePath);
-          getDocs(firebaseBev).then((qs: QuerySnapshot) => {
-            qs.forEach((qd: QueryDocumentSnapshot) => this.beverages.push(qd.data() as BeverageType));
-          })
+          const userQuery: Query = query(firebaseBev, where("email", "==", this.user?.email));
+
+          getDocs(userQuery).then((qs: QuerySnapshot) => {
+            qs.forEach((qd: QueryDocumentSnapshot) => {
+              this.userBev.push(qd.data() as UserBeverage);
+            });
+          }).finally(() => this.userBev.forEach(x => this.beverages.push(x.savedBev)));
         }
         else { setDoc(firebaseUser, { id: email }); }
       }).catch((error: any) => console.log("error", error))
@@ -96,6 +106,7 @@ export const useBeverageStore = defineStore("BeverageStore", {
       const path = "savedBeverage";
       const savedBev = collection(db, path);
       addDoc(savedBev, { savedBev: currentBev, email: this.user?.email });
+      this.beverages.push(currentBev);
 
 
     },

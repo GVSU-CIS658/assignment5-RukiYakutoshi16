@@ -25,5 +25,10 @@ type BeverageType = {
   creamer: CreamerType;
 };
 
-export type { BaseBeverageType, CreamerType, SyrupType, BeverageType };
+type UserBeverage = {
+  email: string;
+  savedBev: BeverageType;
+}
+
+export type { BaseBeverageType, CreamerType, SyrupType, BeverageType, UserBeverage };
 

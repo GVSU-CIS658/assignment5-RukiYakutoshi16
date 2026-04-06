@@ -129,13 +129,17 @@ const signIn = ()=>{
 
 const signOut = () =>{
 onAuthStateChanged(auth,(user:User|null)=> {
-   user=null;
+ if(user!=null){
     beverageStore.user = null;
+    beverageStore.beverages = [];
+    beverageStore.userBev = [];
   
+ }
+
 });
 }
 
-setUser("LloydNguyen@gmail.com");
+//setUser("LloydNguyen@gmail.com");
 
 </script>
 

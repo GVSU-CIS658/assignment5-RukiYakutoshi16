@@ -70,8 +70,11 @@
       <span>Welcome {{  beverageStore.user.displayName }}</span>
        <button @click="signOut">Log out</button>
       </div>
-    <input type="text" placeholder="Beverage Name" v-model="bev_name"/>
-    <button @click="makeBeverage( bev_name )" >🍺 Make Beverage</button>
+      <div v-if="beverageStore.user !== null">
+        <input type="text" placeholder="Beverage Name" v-model="bev_name"/>
+         <button @click="makeBeverage( bev_name )" >🍺 Make Beverage</button>
+      </div>
+    
 
   </div>
   <div>

@@ -121,7 +121,7 @@ onMounted(()=>beverageStore.init());
 
 const signIn = ()=>{
   signInWithPopup(auth,provider)
-         .then((result: UserCredential) => {const cred = GoogleAuthProvider.credentialFromResult(result); 
+         .then((result: UserCredential) => {GoogleAuthProvider.credentialFromResult(result); 
                                                    beverageStore.user = result.user;
                                                   })
          .catch((err: any) => {console.error("Sign in failed ", err)}).finally(()=>{setUser(beverageStore.user?.email as string)})
@@ -129,7 +129,7 @@ const signIn = ()=>{
 
 const signOut = () =>{
 onAuthStateChanged(auth,(user:User|null)=> {
-
+   user=null;
     beverageStore.user = null;
   
 });

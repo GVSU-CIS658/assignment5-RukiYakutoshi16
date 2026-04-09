@@ -68,7 +68,7 @@
     <div v-if="beverageStore.user == null"> <button @click="signIn">Log in to brew</button></div>
     <div v-if="beverageStore.user !== null">
       <span>Welcome {{  beverageStore.user.displayName }}</span>
-       <button @click="signOut">Log out</button>
+       <button @click="logOut">Log out</button>
       </div>
       <div v-if="beverageStore.user !== null">
         <input type="text" placeholder="Beverage Name" v-model="bev_name"/>
@@ -81,14 +81,14 @@
     <p v-if="beverageStore.user == null">Please sign in before make beverages</p>
     <ul v-if="beverageStore.user !== null">
       <li>
-        <template v-for="savedBev in beverageStore.beverages" :key="savedBev.id">
+        <template v-for="savedBev in beverageStore.userBev" :key="savedBev.savedBev.id">
           <label>
             <input
-              @click="showBeverage(savedBev)"
+              @click="showBeverage(savedBev.savedBev)"
               name = "beverage"
               type="radio"
             />
-            {{ savedBev.name}}
+            {{ savedBev.savedBev.name}}
           </label>
         </template>
       </li>
@@ -100,14 +100,14 @@
 
 <script setup lang="ts">
 import {
-  User,
   getAuth,
   UserCredential,
   GoogleAuthProvider,
   signInWithPopup,
-  onAuthStateChanged
+  signOut,
 } from "firebase/auth";
-import { onMounted } from "vue";
+
+import { onMounted, onUnmounted } from "vue";
 import Beverage from "./components/Beverage.vue";
 import { useBeverageStore } from "./stores/beverageStore";
 
@@ -120,29 +120,24 @@ const {makeBeverage} = useBeverageStore();
 
 var bev_name = "";
 
-onMounted(()=>beverageStore.init());
+onMounted(()=>{beverageStore.init()});
+onUnmounted(()=>{beverageStore.unsubcribe()});
 
 const signIn = ()=>{
   signInWithPopup(auth,provider)
          .then((result: UserCredential) => {GoogleAuthProvider.credentialFromResult(result); 
-                                                   beverageStore.user = result.user;
+                                                   setUser(result.user);
                                                   })
-         .catch((err: any) => {console.error("Sign in failed ", err)}).finally(()=>{setUser(beverageStore.user?.email as string)})
+         .catch((err: any) => {console.error("Sign in failed ", err)});
 } 
 
-const signOut = () =>{
-onAuthStateChanged(auth,(user:User|null)=> {
- if(user!=null){
-    beverageStore.user = null;
-    beverageStore.beverages = [];
-    beverageStore.userBev = [];
-  
- }
-
-});
+const logOut = () =>{
+  signOut(auth).then(()=>{
+    beverageStore.unsubcribe();
+beverageStore.user = null;
+beverageStore.userBev = [];
+  }).catch(error => console.log("error ", error))
 }
-
-//setUser("LloydNguyen@gmail.com");
 
 </script>
 

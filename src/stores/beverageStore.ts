@@ -11,8 +11,6 @@ import db from "../firebase.ts";
 import {
   collection,
   getDocs,
-  setDoc,
-  getDoc,
   addDoc,
   where,
   doc,
@@ -20,13 +18,18 @@ import {
   QuerySnapshot,
   QueryDocumentSnapshot,
   DocumentSnapshot,
+  onSnapshot,
   Query,
 } from "firebase/firestore";
 
 import { User } from "firebase/auth"
+import { subscribe } from "firebase/data-connect";
+import Beverage from "../components/Beverage.vue";
+
 
 export const useBeverageStore = defineStore("BeverageStore", {
   state: () => ({
+    unsubcribe: null as any,
     user: null as User | null,
     temps: tempretures,
     currentTemp: tempretures[0],
@@ -36,13 +39,24 @@ export const useBeverageStore = defineStore("BeverageStore", {
     currentSyrup: null as SyrupType | null,
     creamers: [] as CreamerType[],
     currentCreamer: null as CreamerType | null,
-    beverages: [] as BeverageType[],
     currentBeverage: null as BeverageType | null,
     currentName: "",
     userBev: [] as UserBeverage[],
   }),
 
   actions: {
+    subscribe() {
+      const update = collection(db, "savedBeverage");
+      this.unsubcribe = onSnapshot(update, (u: QuerySnapshot) => {
+        for (let x of u.docChanges()) {
+          let user = x.doc.data() as UserBeverage
+          if (this.user?.email != null && user.email == this.user?.email) {
+            this.userBev.push(x.doc.data() as UserBeverage);
+          }
+
+        }
+      })
+    },
     init() {
       if (this.bases.length > 0) return;
       const myBases = collection(db, "bases");
@@ -69,24 +83,18 @@ export const useBeverageStore = defineStore("BeverageStore", {
       });
     },
 
-    setUser(email?: string) {
-      const fullpath = "account/" + email;
-      const firebaseUser = doc(db, fullpath);
+    setUser(user: User | null) {
+      this.user = user;
+      this.subscribe();
+      // const fullpath = "savedBeverage";
+      // const firebaseUser = collection(db, fullpath);
+      // const userQuery: Query = query(firebaseUser, where("email", "==", email));
+      // getDocs(userQuery).then((qs: QuerySnapshot) => {
+      //   qs.forEach((qd: QueryDocumentSnapshot) => {
+      //     this.userBev.push(qd.data() as UserBeverage);
+      //   })
 
-      getDoc(firebaseUser).then((ds: DocumentSnapshot) => {
-        if (ds.exists()) {
-          const beveragePath = "savedBeverage";
-          const firebaseBev = collection(db, beveragePath);
-          const userQuery: Query = query(firebaseBev, where("email", "==", this.user?.email));
-
-          getDocs(userQuery).then((qs: QuerySnapshot) => {
-            qs.forEach((qd: QueryDocumentSnapshot) => {
-              this.userBev.push(qd.data() as UserBeverage);
-            });
-          }).finally(() => this.userBev.forEach(x => this.beverages.push(x.savedBev)));
-        }
-        else { setDoc(firebaseUser, { id: email }); }
-      }).catch((error: any) => console.log("error", error))
+      // }).finally(() => this.unsub()).catch((error: any) => console.log("error", error))
 
 
       //TODO
@@ -96,7 +104,7 @@ export const useBeverageStore = defineStore("BeverageStore", {
         return;
       }
       const currentBev: BeverageType = {
-        id: name + this.user.email,
+        id: name + this.user.email + new Date(),
         name,
         temp: this.currentTemp,
         base: this.currentBase as BaseBeverageType,
@@ -106,7 +114,7 @@ export const useBeverageStore = defineStore("BeverageStore", {
       const path = "savedBeverage";
       const savedBev = collection(db, path);
       addDoc(savedBev, { savedBev: currentBev, email: this.user?.email });
-      this.beverages.push(currentBev);
+
 
 
     },

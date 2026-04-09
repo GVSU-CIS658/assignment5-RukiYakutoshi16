@@ -12,19 +12,13 @@ import {
   collection,
   getDocs,
   addDoc,
-  where,
-  doc,
-  query,
   QuerySnapshot,
   QueryDocumentSnapshot,
-  DocumentSnapshot,
+
   onSnapshot,
-  Query,
 } from "firebase/firestore";
 
 import { User } from "firebase/auth"
-import { subscribe } from "firebase/data-connect";
-import Beverage from "../components/Beverage.vue";
 
 
 export const useBeverageStore = defineStore("BeverageStore", {
@@ -45,7 +39,7 @@ export const useBeverageStore = defineStore("BeverageStore", {
   }),
 
   actions: {
-    subscribe() {
+    subs() {
       const update = collection(db, "savedBeverage");
       this.unsubcribe = onSnapshot(update, (u: QuerySnapshot) => {
         for (let x of u.docChanges()) {
@@ -85,7 +79,7 @@ export const useBeverageStore = defineStore("BeverageStore", {
 
     setUser(user: User | null) {
       this.user = user;
-      this.subscribe();
+      this.subs();
       // const fullpath = "savedBeverage";
       // const firebaseUser = collection(db, fullpath);
       // const userQuery: Query = query(firebaseUser, where("email", "==", email));
